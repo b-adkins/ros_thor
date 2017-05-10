@@ -9,6 +9,7 @@ import RPi.GPIO as GPIO
 
 
 class Motor(object):
+    ## My wiring uses yellow for dir, green for step, and blue for enable 
     def __init__(self, direction, step, enable):
         self._direction_pin = direction
         self._step_pin = step
@@ -55,6 +56,7 @@ GPIO.setmode(GPIO.BOARD)
 
 
 motors = {
+    "art4": Motor(16, 15, 13),
     "art5": Motor(8, 7, 5),
     "art6": Motor(12, 11, 10)
 }
@@ -62,20 +64,39 @@ motors = {
 
 # Simple default executable
 if __name__ == "__main__":
+    cmd = ""
     if len(sys.argv) > 1:
-        if sys.argv[1] == "yaw":
-            motors["art5"].direction = True
-            motors["art6"].direction = True
-        elif sys.argv[1] == "-yaw":
-            motors["art5"].direction = False
-            motors["art6"].direction = False
-        else:
-            motors["art5"].direction = True
-            motors["art6"].direction = False
+        cmd = sys.argv[1]
+
 
     for m in motors.values():
-        m.enable()
+        m.disable()
 
+        
+    if cmd == "yaw":
+        motors["art5"].direction = True
+        motors["art6"].direction = True
+        motors["art5"].enable()
+        motors["art6"].enable()           
+    elif cmd == "-yaw":
+        motors["art5"].direction = False
+        motors["art6"].direction = False
+        motors["art5"].enable()
+        motors["art6"].enable()
+    elif cmd == "roll":
+        motors["art5"].direction = True
+        motors["art6"].direction = False
+        motors["art5"].enable()
+        motors["art6"].enable()
+    elif cmd == "-roll":
+        motors["art5"].direction = False
+        motors["art6"].direction = True
+        motors["art5"].enable()
+        motors["art6"].enable()
+    else:
+        motors["art4"].direction = True
+        motors["art4"].enable()
+            
     try:
         while(True):
             for m in motors.values():
