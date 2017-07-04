@@ -57,9 +57,11 @@ GPIO.setmode(GPIO.BOARD)
 
 
 motors = {
-    "art1": Motor(36, 35, 33),
-    "art2a": Motor(32, 31, 29),
-    "art2b": Motor(24, 23, 26),
+#    "art1": Motor(36, 35, 33),
+#    "art2a": Motor(32, 31, 29),
+#    "art2b": Motor(24, 23, 26),
+    "art1": Motor(32, 31, 29),
+    "art2": Motor(24, 23, 26),
     "art3": Motor(22, 21, 19),
     "art4": Motor(16, 15, 13),
     "art5": Motor(8, 7, 5),
@@ -114,10 +116,8 @@ if __name__ == "__main__":
         motors["art3"].direction = True
         motors["art3"].enable()
     elif cmd == "art2":
-        motors["art2a"].direction = True
-        motors["art2b"].direction = True
-        motors["art2a"].enable()
-        motors["art2b"].enable()
+        motors["art2"].direction = True
+        motors["art2"].enable()
     elif cmd == "art1":
         motors["art1"].direction = True
         motors["art1"].enable()
