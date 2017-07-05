@@ -3,7 +3,9 @@
 ## Crude high level stepper motor controllers
 
 import os.path
+import readline
 import sys
+import thread
 import time
 
 import RPi.GPIO as GPIO
@@ -68,71 +70,103 @@ motors = {
     "art6": Motor(12, 11, 10)
 }
 
-def usage(exe_name):
-    print('''Usage: {} cmd
 
-Valid commands: yaw, -yaw, roll, -roll, art4, art3, art2
-    '''.format(exe_name))
-
-
-# Simple default executable
-if __name__ == "__main__":
-    cmd = ""
-    if len(sys.argv) > 1:
-        cmd = sys.argv[1]
-    else:
-        usage(os.path.basename(sys.argv[0]))
-        sys.exit(2)
-
-
+def disable_all():
     for m in motors.values():
         m.disable()
 
+def enable_all():
+    for m in motors.values():
+        m.enable()
+
         
-    if cmd == "yaw":
-        motors["art5"].direction = True
-        motors["art6"].direction = True
-        motors["art5"].enable()
-        motors["art6"].enable()           
-    elif cmd == "-yaw":
-        motors["art5"].direction = False
-        motors["art6"].direction = False
-        motors["art5"].enable()
-        motors["art6"].enable()
-    elif cmd == "roll":
-        motors["art5"].direction = True
-        motors["art6"].direction = False
-        motors["art5"].enable()
-        motors["art6"].enable()
-    elif cmd == "-roll":
-        motors["art5"].direction = False
-        motors["art6"].direction = True
-        motors["art5"].enable()
-        motors["art6"].enable()
-    elif cmd == "art4":
-        motors["art4"].direction = True
-        motors["art4"].enable()
-    elif cmd == "art3":
-        motors["art3"].direction = True
-        motors["art3"].enable()
-    elif cmd == "art2":
-        motors["art2"].direction = True
-        motors["art2"].enable()
-    elif cmd == "art1":
-        motors["art1"].direction = True
-        motors["art1"].enable()
-    else:
+#
+# Simple default executable
+#
+
+
+def usage(exe_name):
+    print('''Usage: {}
+
+Enters a motor shell
+{}
+'''.format(exe_name, shell_usage_msg()))
+
+def shell_usage_msg():
+    return '''Valid commands:
+    yaw, -yaw, roll, -roll, art4, art3, art2, art1, -art4, -art3, -art2, -art1
+    '''
+
+def tick_thread():
+    while(True):
+        for m in motors.values():
+            m.step()
+            time.sleep(3e-3)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] in ["help", '-h', "--help"]:
         usage(os.path.basename(sys.argv[0]))
         sys.exit(2)
-    
-            
+ 
     try:
-        while(True):
-            for m in motors.values():
-                m.step()
-            time.sleep(3e-2)
+        disable_all()
+        cmd = ''
+        thread.start_new_thread(tick_thread, ())
+        
+        while cmd not in ["q", "quit", "exit"]:
+            cmd = raw_input("<o>: ")
             
+            if cmd in ["help", "h"]:
+                print(shell_usage_msg())
+            elif cmd == "yaw":
+                motors["art5"].direction = True
+                motors["art6"].direction = True
+                motors["art5"].enable()
+                motors["art6"].enable()           
+            elif cmd == "-yaw":
+                motors["art5"].direction = False
+                motors["art6"].direction = False
+                motors["art5"].enable()
+                motors["art6"].enable()
+            elif cmd == "roll":
+                motors["art5"].direction = True
+                motors["art6"].direction = False
+                motors["art5"].enable()
+                motors["art6"].enable()
+            elif cmd == "-roll":
+                motors["art5"].direction = False
+                motors["art6"].direction = True
+                motors["art5"].enable()
+                motors["art6"].enable()
+            elif cmd == "art4":
+                motors["art4"].direction = True
+                motors["art4"].enable()
+            elif cmd == "art3":
+                motors["art3"].direction = True
+                motors["art3"].enable()
+            elif cmd == "art2":
+                motors["art2"].direction = True
+                motors["art2"].enable()
+            elif cmd == "art1":
+                motors["art1"].direction = True
+                motors["art1"].enable()
+            elif cmd == "-art4":
+                motors["art4"].direction = False
+                motors["art4"].enable()
+            elif cmd == "-art3":
+                motors["art3"].direction = False
+                motors["art3"].enable()
+            elif cmd == "-art2":
+                motors["art2"].direction = False
+                motors["art2"].enable()
+            elif cmd == "-art1":
+                motors["art1"].direction = False
+                motors["art1"].enable()
+            elif cmd in ["stop", 's']:
+                for m in motors.values():
+                    m.disable()   
+                        
     finally:
-        for m in motors.values():
-            m.disable()
+        disable_all()
         GPIO.cleanup()
